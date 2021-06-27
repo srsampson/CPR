@@ -139,12 +139,12 @@ public final class CPR {
         // Check to see that the latitude is in range: -90 .. +90
         if ((rlat0 < -90.0) || (rlat0 > 90.0)
                 || (rlat1 < -90.0) || (rlat1 > 90.0)) {
-            throw new CPRException();//return -2; // bad data
+            throw new CPRException("bad airborne latitude");
         }
 
         // Check that both are in the same latitude zone, or abort.
         if (cprNLFunction(rlat0) != cprNLFunction(rlat1)) {
-            throw new CPRException();//return -1; // positions crossed a latitude zone, try again later
+            throw new CPRException("airborne positions crossed a latitude zone");
         }
 
         // Compute ni and the Longitude Index "m"
@@ -235,12 +235,12 @@ public final class CPR {
         // Check to see that the latitude is in range: -90 .. +90
         if ((rlat0 < -90.0) || (rlat0 > 90.0)
                 || (rlat1 < -90.0) || (rlat1 > 90.0)) {
-            throw new CPRException();//return -2; // bad data
+            throw new CPRException("bad surface latitude");
         }
 
         // Check that both are in the same latitude zone, or abort.
         if (cprNLFunction(rlat0) != cprNLFunction(rlat1)) {
-            throw new CPRException();//return -1; // positions crossed a latitude zone, try again later
+            throw new CPRException("surface positions crossed a latitude zone");
         }
 
         // Compute ni and the Longitude Index "m"
@@ -298,12 +298,12 @@ public final class CPR {
 
         // Check to see that the latitude is in range: -90 .. +90
         if ((rlat < -90.0) || (rlat > 90.0)) {
-            throw new CPRException();//return -1;  // Time to give up - Latitude error
+            throw new CPRException("relative latitude error");
         }
 
         // Check to see that answer is reasonable - ie no more than 1/2 cell away
         if (Math.abs(rlat - reflat) > (AirDlat / 2.0)) {
-            throw new CPRException();//return -1; // Time to give up - Latitude error
+            throw new CPRException("relative latitude error");
         }
 
         // Compute the Longitude Index "m"
@@ -320,7 +320,7 @@ public final class CPR {
 
         // Check to see that answer is reasonable - ie no more than 1/2 cell away
         if (Math.abs(rlon - reflon) > (AirDlon / 2.0)) {
-            throw new CPRException();//return -1;   // Time to give up - Longitude error
+            throw new CPRException("relative longitude error");
         }
 
         return new LatLon(rlat, rlon);
