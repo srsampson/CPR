@@ -41,7 +41,7 @@ public final class CPR {
      * This has been verified with a published ICAO fixed table.
      * I like this algorithm better than the dump1090 one.
      */
-     public CPR() {
+    public CPR() {
         double tmp = (1.0 - Math.cos(Math.PI / 30.0));
 
         NL[0] = 90.0;
@@ -88,7 +88,7 @@ public final class CPR {
         if (b == 0.0) {
             return Double.NaN;
         }
-        
+
         double res = Math.IEEEremainder(a, b);
 
         if (res < 0.0) {
@@ -112,8 +112,8 @@ public final class CPR {
         return ((surface == true) ? 90.0 : 360.0) / cprNFunction(lat, fflag);
     }
 
-    public int decodeCPRairborne(int even_cprlat, int even_cprlon,
-            int odd_cprlat, int odd_cprlon, boolean fflag, double[] out_lat, double[] out_lon) {
+    public LatLon decodeCPRairborne(int even_cprlat, int even_cprlon,
+            int odd_cprlat, int odd_cprlon, boolean fflag) throws CPRException {
         double AirDlat0 = 360.0 / 60.0;
         double AirDlat1 = 360.0 / 59.0;
         double lat0 = even_cprlat;
@@ -137,16 +137,16 @@ public final class CPR {
         }
 
         // Check to see that the latitude is in range: -90 .. +90
-        if ((rlat0 < -90.0) || (rlat0 > 90.0) ||
-                (rlat1 < -90.0) || (rlat1 > 90.0)) {
-            return -2; // bad data
+        if ((rlat0 < -90.0) || (rlat0 > 90.0)
+                || (rlat1 < -90.0) || (rlat1 > 90.0)) {
+            throw new CPRException();//return -2; // bad data
         }
-        
+
         // Check that both are in the same latitude zone, or abort.
         if (cprNLFunction(rlat0) != cprNLFunction(rlat1)) {
-            return -1; // positions crossed a latitude zone, try again later
+            throw new CPRException();//return -1; // positions crossed a latitude zone, try again later
         }
-        
+
         // Compute ni and the Longitude Index "m"
         if (fflag == true) { // Use odd packet.
             int ni = cprNFunction(rlat1, true);
@@ -165,15 +165,12 @@ public final class CPR {
         // Renormalize to -180 .. +180
         rlon -= Math.floor((rlon + 180.0) / 360.0) * 360.0;
 
-        out_lat[0] = rlat;
-        out_lon[0] = rlon;
-
-        return 0;
+        return new LatLon(rlat, rlon);
     }
 
-    public int decodeCPRsurface(double reflat, double reflon,
+    public LatLon decodeCPRsurface(double reflat, double reflon,
             int even_cprlat, int even_cprlon, int odd_cprlat, int odd_cprlon,
-            boolean fflag, double[] out_lat, double[] out_lon) {
+            boolean fflag) throws CPRException {
         double AirDlat0 = 90.0 / 60.0;
         double AirDlat1 = 90.0 / 59.0;
         double lat0 = even_cprlat;
@@ -234,16 +231,16 @@ public final class CPR {
         } else if ((rlat1 - reflat) > 45.0) {
             rlat1 -= 90.0;
         }
-        
+
         // Check to see that the latitude is in range: -90 .. +90
-        if ((rlat0 < -90.0) || (rlat0 > 90.0) ||
-                (rlat1 < -90.0) || (rlat1 > 90.0)) {
-            return -2; // bad data
+        if ((rlat0 < -90.0) || (rlat0 > 90.0)
+                || (rlat1 < -90.0) || (rlat1 > 90.0)) {
+            throw new CPRException();//return -2; // bad data
         }
 
         // Check that both are in the same latitude zone, or abort.
         if (cprNLFunction(rlat0) != cprNLFunction(rlat1)) {
-            return -1; // positions crossed a latitude zone, try again later
+            throw new CPRException();//return -1; // positions crossed a latitude zone, try again later
         }
 
         // Compute ni and the Longitude Index "m"
@@ -275,15 +272,11 @@ public final class CPR {
         // Renormalize to -180 .. +180
         rlon -= Math.floor((rlon + 180.0) / 360.0) * 360.0;
 
-        out_lat[0] = rlat;
-        out_lon[0] = rlon;
-
-        return 0;
+        return new LatLon(rlat, rlon);
     }
 
-    public int decodeCPRrelative(double reflat, double reflon,
-            int cprlat, int cprlon, boolean fflag, boolean surface,
-            double[] out_lat, double[] out_lon) {
+    public LatLon decodeCPRrelative(double reflat, double reflon,
+            int cprlat, int cprlon, boolean fflag, boolean surface) throws CPRException {
         double AirDlat;
         double AirDlon;
         double fractional_lat = cprlat / 131072.0;
@@ -305,12 +298,12 @@ public final class CPR {
 
         // Check to see that the latitude is in range: -90 .. +90
         if ((rlat < -90.0) || (rlat > 90.0)) {
-            return -1;  // Time to give up - Latitude error
+            throw new CPRException();//return -1;  // Time to give up - Latitude error
         }
 
         // Check to see that answer is reasonable - ie no more than 1/2 cell away
         if (Math.abs(rlat - reflat) > (AirDlat / 2.0)) {
-            return -1; // Time to give up - Latitude error
+            throw new CPRException();//return -1; // Time to give up - Latitude error
         }
 
         // Compute the Longitude Index "m"
@@ -327,12 +320,9 @@ public final class CPR {
 
         // Check to see that answer is reasonable - ie no more than 1/2 cell away
         if (Math.abs(rlon - reflon) > (AirDlon / 2.0)) {
-            return -1;   // Time to give up - Longitude error
+            throw new CPRException();//return -1;   // Time to give up - Longitude error
         }
 
-        out_lat[0] = rlat;
-        out_lon[0] = rlon;
-
-        return 0;
+        return new LatLon(rlat, rlon);
     }
 }
