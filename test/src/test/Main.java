@@ -4,7 +4,11 @@
  *
  * All rights reserved
  */
-package cpr;
+package test;
+
+import cpr.CPR;
+import cpr.CPRException;
+import cpr.LatLon;
 
 public final class Main {
 
